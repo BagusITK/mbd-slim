@@ -11,22 +11,68 @@ use Slim\Interfaces\RouteCollectorProxyInterface as Group;
 
 return function (App $app) {
 
-    // get
-    $app->get('/countries', function (Request $request, Response $response) {
+    // get pada tabel satuanpendidikan
+    $app->get('/satuanpendidikan', function (Request $request, Response $response) {
         $db = $this->get(PDO::class);
 
-        $query = $db->query('SELECT * FROM countries');
+        $query = $db->query('SELECT * FROM satuanpendidikan');
         $results = $query->fetchAll(PDO::FETCH_ASSOC);
         $response->getBody()->write(json_encode($results));
 
         return $response->withHeader("Content-Type", "application/json");
     });
 
-    // get by id
-    $app->get('/countries/{id}', function (Request $request, Response $response, $args) {
+    //get pada tabel kelas
+    $app->get('/kelas', function (Request $request, Response $response) {
         $db = $this->get(PDO::class);
 
-        $query = $db->prepare('SELECT * FROM countries WHERE id=?');
+        $query = $db->query('SELECT * FROM kelas');
+        $results = $query->fetchAll(PDO::FETCH_ASSOC);
+        $response->getBody()->write(json_encode($results));
+
+        return $response->withHeader("Content-Type", "application/json");
+    });
+
+    //get pada tabel data_isi_peserta_kelas
+    $app->get('data_isi_peserta_kelas', function (Request $request, Response $response) {
+        $db = $this->get(PDO::class);
+
+        $query = $db->query('SELECT * FROMdata_isi_peserta_kelas');
+        $results = $query->fetchAll(PDO::FETCH_ASSOC);
+        $response->getBody()->write(json_encode($results));
+
+        return $response->withHeader("Content-Type", "application/json");
+    });
+
+    // get by id_satuanpendidikan pada tabel satuan pendidikan
+    $app->get('/satuanpendidikan/{id_satuanpendidikan}', function (Request $request, Response $response, $args) {
+        $db = $this->get(PDO::class);
+
+        $query = $db->prepare('SELECT * FROM satuanpendidikan WHERE id_satuanpendidikan=?');
+        $query->execute([$args['id_satuanpendidikan']]);
+        $results = $query->fetchAll(PDO::FETCH_ASSOC);
+        $response->getBody()->write(json_encode($results[0]));
+
+        return $response->withHeader("Content-Type", "application/json");
+    });
+
+    // get by id_kelas pada tabel kelas
+    $app->get('/kelas/{id_kelas}', function (Request $request, Response $response, $args) {
+        $db = $this->get(PDO::class);
+
+        $query = $db->prepare('SELECT * FROM kelas WHERE id_kelas=?');
+        $query->execute([$args['id_kelas']]);
+        $results = $query->fetchAll(PDO::FETCH_ASSOC);
+        $response->getBody()->write(json_encode($results[0]));
+
+        return $response->withHeader("Content-Type", "application/json");
+    });
+
+    // get by id pada data_isi_peserta_kelas
+    $app->get('/data_isi_peserta_kelas/{id}', function (Request $request, Response $response, $args) {
+        $db = $this->get(PDO::class);
+
+        $query = $db->prepare('SELECT * FROM data_isi_peserta_kelas WHERE id=?');
         $query->execute([$args['id']]);
         $results = $query->fetchAll(PDO::FETCH_ASSOC);
         $response->getBody()->write(json_encode($results[0]));
