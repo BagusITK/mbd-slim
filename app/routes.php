@@ -15,7 +15,7 @@ return function (App $app) {
     $app->get('/satuanpendidikan', function (Request $request, Response $response) {
         $db = $this->get(PDO::class);
 
-        $query = $db->query('SELECT * FROM satuanpendidikan');
+        $query = $db->query('CALL selectSatuanPendidikan');
         $results = $query->fetchAll(PDO::FETCH_ASSOC);
         $response->getBody()->write(json_encode($results));
 
@@ -26,7 +26,7 @@ return function (App $app) {
     $app->get('/kelas', function (Request $request, Response $response) {
         $db = $this->get(PDO::class);
 
-        $query = $db->query('SELECT * FROM kelas');
+        $query = $db->query('CALL selectKelas');
         $results = $query->fetchAll(PDO::FETCH_ASSOC);
         $response->getBody()->write(json_encode($results));
 
@@ -34,10 +34,10 @@ return function (App $app) {
     });
 
     //get pada tabel data_isi_peserta_kelas
-    $app->get('data_isi_peserta_kelas', function (Request $request, Response $response) {
+    $app->get('/data_isi_peserta_kelas', function (Request $request, Response $response) {
         $db = $this->get(PDO::class);
 
-        $query = $db->query('SELECT * FROMdata_isi_peserta_kelas');
+        $query = $db->query('CALL selectDataIsiPesertaKelas');
         $results = $query->fetchAll(PDO::FETCH_ASSOC);
         $response->getBody()->write(json_encode($results));
 
@@ -81,28 +81,30 @@ return function (App $app) {
     });
 
     // post data
-    $app->post('/countries', function (Request $request, Response $response) {
+    $app->post('/insertkelas', function (Request $request, Response $response, $args) {
         $parsedBody = $request->getParsedBody();
 
-        $id = $parsedBody["id"]; // menambah dengan kolom baru
-        $countryName = $parsedBody["name"];
-
         $db = $this->get(PDO::class);
-
-        $query = $db->prepare('INSERT INTO countries (id, name) values (?, ?)');
-
-        // urutan harus sesuai dengan values
-        $query->execute([$id, $countryName]);
-
-        $lastId = $db->lastInsertId();
-
+        try {
+        $query = $db->prepare('CALL InsertKelas (:kelas, :name, :id_satpen)');
+        
+        $query->bindParam(':kelas', $parsedBody['id_kelas'], PDO::PARAM_INT);
+        $query->bindParam(':name', $parsedBody['nama_kelas'], PDO::PARAM_STR);
+        $query->bindParam(':id_satpen', $parsedBody['id_satuanpendidikan'], PDO::PARAM_INT);
+        $query->execute();
         $response->getBody()->write(json_encode(
             [
-                'message' => 'country disimpan dengan id ' . $lastId
+                'message' => 'Kelas ditambahkan pada id ' . ':idkelas'
             ]
         ));
 
-        return $response->withHeader("Content-Type", "application/json");
+        return $response->withStatus(500)->withHeader('Content-Type', 'application/json');
+    } catch (PDOException $e) {
+        $response->getBody()->write(json_encode([
+            'error' => 'Terjadi kesalahan dalam menambahkan kelas: ' 
+        ]));
+        return $response->withStatus(500)->withHeader('Content-Type', 'application/json');
+        }
     });
 
     // put data
