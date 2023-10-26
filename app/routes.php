@@ -48,8 +48,9 @@ return function (App $app) {
     $app->get('/satuanpendidikan/{id_satuanpendidikan}', function (Request $request, Response $response, $args) {
         $db = $this->get(PDO::class);
 
-        $query = $db->prepare('SELECT * FROM satuanpendidikan WHERE id_satuanpendidikan=?');
-        $query->execute([$args['id_satuanpendidikan']]);
+        $query = $db->prepare('CALL SelectSatuanPendidikanById(:id_satpen)');
+        $query->bindParam(':id_satpen', $args['id_satuanpendidikan'], PDO::PARAM_INT);
+        $query->execute();
         $results = $query->fetchAll(PDO::FETCH_ASSOC);
         $response->getBody()->write(json_encode($results[0]));
 
@@ -60,8 +61,9 @@ return function (App $app) {
     $app->get('/kelas/{id_kelas}', function (Request $request, Response $response, $args) {
         $db = $this->get(PDO::class);
 
-        $query = $db->prepare('SELECT * FROM kelas WHERE id_kelas=?');
-        $query->execute([$args['id_kelas']]);
+        $query = $db->prepare('CALL SelectKelasById(:kelas_id)');
+        $query->bindParam(':kelas_id', $args['id_kelas'], PDO::PARAM_INT);
+        $query->execute();
         $results = $query->fetchAll(PDO::FETCH_ASSOC);
         $response->getBody()->write(json_encode($results[0]));
 
@@ -72,40 +74,51 @@ return function (App $app) {
     $app->get('/data_isi_peserta_kelas/{id}', function (Request $request, Response $response, $args) {
         $db = $this->get(PDO::class);
 
-        $query = $db->prepare('SELECT * FROM data_isi_peserta_kelas WHERE id=?');
-        $query->execute([$args['id']]);
+        $query = $db->prepare('CALL SelectDataIsiPesertaKelasById(:datakelas_id)');
+        $query->bindParam(':datakelas_id', $args['id'], PDO::PARAM_INT);
+        $query->execute();
         $results = $query->fetchAll(PDO::FETCH_ASSOC);
         $response->getBody()->write(json_encode($results[0]));
 
         return $response->withHeader("Content-Type", "application/json");
     });
 
-    // post data
-    $app->post('/insertkelas', function (Request $request, Response $response, $args) {
+    // post data pada tabel kelas
+    $app->post('/kelas', function (Request $request, Response $response, $args) {
         $parsedBody = $request->getParsedBody();
-
-        $db = $this->get(PDO::class);
-        try {
-        $query = $db->prepare('CALL InsertKelas (:kelas, :name, :id_satpen)');
-        
-        $query->bindParam(':kelas', $parsedBody['id_kelas'], PDO::PARAM_INT);
-        $query->bindParam(':name', $parsedBody['nama_kelas'], PDO::PARAM_STR);
-        $query->bindParam(':id_satpen', $parsedBody['id_satuanpendidikan'], PDO::PARAM_INT);
-        $query->execute();
-        $response->getBody()->write(json_encode(
-            [
-                'message' => 'Kelas ditambahkan pada id ' . ':idkelas'
-            ]
-        ));
-
-        return $response->withStatus(500)->withHeader('Content-Type', 'application/json');
-    } catch (PDOException $e) {
-        $response->getBody()->write(json_encode([
-            'error' => 'Terjadi kesalahan dalam menambahkan kelas: ' 
-        ]));
-        return $response->withStatus(500)->withHeader('Content-Type', 'application/json');
+    
+        if (isset($parsedBody["id_kelas"]) && isset($parsedBody["nama_kelas"]) && isset($parsedBody["id_satuanpendidikan"])) {
+            $id_kelas = $parsedBody["id_kelas"];
+            $nama_kelas = $parsedBody["nama_kelas"];
+            $id_satuanpendidikan = $parsedBody["id_satuanpendidikan"];
+    
+            $db = $this->get(PDO::class);
+    
+            try {
+                $query = $db->prepare('CALL InsertKelas (?, ?, ?)');
+                $query->execute([$id_kelas, $nama_kelas, $id_satuanpendidikan]);
+    
+                $responseData = [
+                    'message' => 'Data yang dimasukkan pada tabel kelas berhasil disimpan'
+                ];
+    
+                $response->getBody()->write(json_encode($responseData));
+                return $response->withHeader('Content-Type', 'application/json')->withStatus(200);
+            } catch (\Exception $e) {
+                $responseData = [
+                    'error' => 'Gagal menyimpan data kelas'
+                ];
+                return $response->withHeader('Content-Type', 'application/json')->withStatus(500);
+            }
+            
+        } else {
+            $responseData = [
+                'error' => 'Data yang diperlukan tidak lengkap'
+            ];
+            return $response->withHeader('Content-Type', 'application/json')->withStatus(400);
         }
     });
+    
 
     // put data
     $app->put('/countries/{id}', function (Request $request, Response $response, $args) {
