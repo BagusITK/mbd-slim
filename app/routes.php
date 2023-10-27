@@ -118,7 +118,34 @@ return function (App $app) {
             return $response->withHeader('Content-Type', 'application/json')->withStatus(400);
         }
     });
+
+    //post data pada tabel satuanpendidikan
+    $app->post('/satuanpendidikan', function (Request $request, Response $response) {
+        $parsedBody = $request->getParsedBody();
     
+        $id_satuanpendidikan = $parsedBody["id_satuanpendidikan"];
+        $nama_satuanpendidikan = $parsedBody["nama_satuanpendidikan"];
+       
+    
+        $db = $this->get(PDO::class);
+    
+        try {
+            $query = $db->prepare('CALL InsertSatuanPendidikan(?, ?)');
+            $query->execute([$id_satuanpendidikan, $nama_satuanpendidikan]);
+    
+            $responseData = [
+                'message' => 'Data Sekolah Berhasil disimpan.'
+            ];
+    
+            $response->getBody()->write(json_encode($responseData));
+            return $response->withHeader('Content-Type', 'application/json')->withStatus(200);
+        } catch (\Exception $e) {
+            $responseData = [
+                'error' => 'Gagal Menyimpan Data Sekolah.'
+            ];
+            return $response->withHeader('Content-Type', 'application/json')->withStatus(500);
+        }
+    });
 
     // put data
     $app->put('/countries/{id}', function (Request $request, Response $response, $args) {
