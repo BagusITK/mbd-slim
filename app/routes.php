@@ -164,35 +164,191 @@ return function (App $app) {
         }
     });
 
-    // put data
-    $app->put('/countries/{id}', function (Request $request, Response $response, $args) {
-        $parsedBody = $request->getParsedBody();
-
-        $currentId = $args['id'];
-        $countryName = $parsedBody["name"];
+    // put data pada tabel kelas
+    $app->put('/kelas/{id_kelas}', function (Request $request, Response $response, $args) {
+        $kelas_id = $args['id_kelas'];
+        $data = $request->getParsedBody();
+    
+        $nama_kelas = $data['nama_kelas'];
+    
         $db = $this->get(PDO::class);
-
-        $query = $db->prepare('UPDATE countries SET name = ? WHERE id = ?');
-        $query->execute([$countryName, $currentId]);
-
-        $response->getBody()->write(json_encode(
-            [
-                'message' => 'country dengan id ' . $currentId . ' telah diupdate dengan nama ' . $countryName
-            ]
-        ));
-
+    
+        try {
+            $query = $db->prepare('CALL UpdateKelas(?, ?)');
+            $query->execute([$kelas_id, $nama_kelas]);
+    
+            if ($query->rowCount() === 0) {
+                $response = $response->withStatus(404);
+                $response->getBody()->write(json_encode([
+                    'message' => 'Data tidak ditemukan pada database'
+                ]));
+            } else {
+                $response->getBody()->write(json_encode([
+                    'message' => 'Data kelas dengan ID ' . $kelas_id . ' telah diperbarui.'
+                ]));
+            }
+        } catch (PDOException $e) {
+            $response = $response->withStatus(500);
+            $response->getBody()->write(json_encode([
+                'message' => 'Terdapat error pada database ' . $e->getMessage()
+            ]));
+        }
+    
         return $response->withHeader("Content-Type", "application/json");
     });
 
-    // delete data
-    $app->delete('/countries/{id}', function (Request $request, Response $response, $args) {
-        $currentId = $args['id'];
+    // put data pada tabel data_isi_peserta_kelas
+    $app->put('/data_isi_peserta_kelas/{id}', function (Request $request, Response $response, $args) {
+        $datakelas_id = $args['id'];
+        $data = $request->getParsedBody();
+    
+        $nama_kelas = $data['nama_kelas'];
+        $jumlah_rombel = $data['jumlah_rombel'];
+        $peserta_didik = $data['peserta_didik'];
+    
         $db = $this->get(PDO::class);
-
+    
         try {
-            $query = $db->prepare('DELETE FROM countries WHERE id = ?');
-            $query->execute([$currentId]);
+            $query = $db->prepare('CALL UpdateDataIsiPesertaKelas(?, ?, ?, ?)');
+            $query->execute([$datakelas_id, $nama_kelas, $jumlah_rombel, $peserta_didik]);
+    
+            if ($query->rowCount() === 0) {
+                $response = $response->withStatus(404);
+                $response->getBody()->write(json_encode([
+                    'message' => 'Data tidak ditemukan pada database'
+                ]));
+            } else {
+                $response->getBody()->write(json_encode([
+                    'message' => 'Data isi peserta kelas dengan ID ' . $datakelas_id . ' telah diperbarui.'
+                ]));
+            }
+        } catch (PDOException $e) {
+            $response = $response->withStatus(500);
+            $response->getBody()->write(json_encode([
+                'message' => 'Terdapat error pada database ' . $e->getMessage()
+            ]));
+        }
+    
+        return $response->withHeader("Content-Type", "application/json");
+    });
 
+    // put data pada tabel satuanpendidikan
+    $app->put('/satuanpendidikan/{id_satuanpendidikan}', function (Request $request, Response $response, $args) {
+        $id_satpen = $args['id_satuanpendidikan'];
+        $data = $request->getParsedBody();
+    
+        $nama_satuanpendidikan = $data['nama_satuanpendidikan'];
+    
+        $db = $this->get(PDO::class);
+    
+        try {
+            $query = $db->prepare('CALL UpdateKelas(?, ?)');
+            $query->execute([$id_satpen, $nama_satuanpendidikan]);
+    
+            if ($query->rowCount() === 0) {
+                $response = $response->withStatus(404);
+                $response->getBody()->write(json_encode([
+                    'message' => 'Data tidak ditemukan pada database'
+                ]));
+            } else {
+                $response->getBody()->write(json_encode([
+                    'message' => 'Data kelas dengan ID ' . $id_satpen . ' telah diperbarui.'
+                ]));
+            }
+        } catch (PDOException $e) {
+            $response = $response->withStatus(500);
+            $response->getBody()->write(json_encode([
+                'message' => 'Terdapat error pada database ' . $e->getMessage()
+            ]));
+        }
+    
+        return $response->withHeader("Content-Type", "application/json");
+    });
+
+    // delete data pada tabel kelas
+    $app->delete('/kelas', function (Request $request, Response $response, $args) {
+        $db = $this->get(PDO::class);
+    
+        try {
+            $query = $db->prepare('CALL DeleteKelas()');
+            $query->execute();
+    
+            $response->getBody()->write(json_encode(
+                [
+                    'message' => 'Seluruh data yang ada pada tabel kelas telah dihapus'
+                ]
+            ));
+        } catch (PDOException $e) {
+            $response = $response->withStatus(500);
+            $response->getBody()->write(json_encode(
+                [
+                    'message' => 'Terdapat error pada database ' . $e->getMessage()
+                ]
+            ));
+        }
+    
+        return $response->withHeader("Content-Type", "application/json");
+    });
+
+    // delete data pada tabel data_isi_peserta_kelas
+    $app->delete('/data_isi_peserta_kelas', function (Request $request, Response $response, $args) {
+        $db = $this->get(PDO::class);
+    
+        try {
+            $query = $db->prepare('CALL DeleteDataIsiKelas()');
+            $query->execute();
+    
+            $response->getBody()->write(json_encode(
+                [
+                    'message' => 'Seluruh data yang ada pada tabel data_isi_peserta_kelas telah dihapus '
+                ]
+            ));
+        } catch (PDOException $e) {
+            $response = $response->withStatus(500);
+            $response->getBody()->write(json_encode(
+                [
+                    'message' => 'Terdapat error pada database ' . $e->getMessage()
+                ]
+            ));
+        }
+    
+        return $response->withHeader("Content-Type", "application/json");
+    });
+
+    // delete data pada tabel satuanpendidikan
+    $app->delete('/satuanpendidikan', function (Request $request, Response $response, $args) {
+        $db = $this->get(PDO::class);
+    
+        try {
+            $query = $db->prepare('CALL DeleteSatuanPendidikan()');
+            $query->execute();
+    
+            $response->getBody()->write(json_encode(
+                [
+                    'message' => 'Seluruh data yang ada pada tabel satuanpendidikan telah dihapus'
+                ]
+            ));
+        } catch (PDOException $e) {
+            $response = $response->withStatus(500);
+            $response->getBody()->write(json_encode(
+                [
+                    'message' => 'Terdapat error pada database ' . $e->getMessage()
+                ]
+            ));
+        }
+    
+        return $response->withHeader("Content-Type", "application/json");
+    });
+
+    //delete by id pada tabel kelas
+    $app->delete('/kelas/{id_kelas}', function (Request $request, Response $response, $args) {
+        $kelas_id = $args['id_kelas'];
+        $db = $this->get(PDO::class);
+    
+        try {
+            $query = $db->prepare('CALL DeleteKelasById(?)');
+            $query->execute([$kelas_id]);
+    
             if ($query->rowCount() === 0) {
                 $response = $response->withStatus(404);
                 $response->getBody()->write(json_encode(
@@ -203,7 +359,7 @@ return function (App $app) {
             } else {
                 $response->getBody()->write(json_encode(
                     [
-                        'message' => 'country dengan id ' . $currentId . ' dihapus dari database'
+                        'message' => 'Data kelas dengan ID ' . $kelas_id . ' telah dihapus pada database '
                     ]
                 ));
             }
@@ -211,11 +367,82 @@ return function (App $app) {
             $response = $response->withStatus(500);
             $response->getBody()->write(json_encode(
                 [
-                    'message' => 'Database error ' . $e->getMessage()
+                    'message' => 'Terdapat error pada database ' . $e->getMessage()
                 ]
             ));
         }
-
+    
         return $response->withHeader("Content-Type", "application/json");
     });
+
+    //delete by id pada tabel data_isi_peserta_kelas
+    $app->delete('/data_isi_peserta_kelas/{id}', function (Request $request, Response $response, $args) {
+        $datakelas_id = $args['id'];
+        $db = $this->get(PDO::class);
+    
+        try {
+            $query = $db->prepare('CALL DeleteDataIsiKelasById(?)');
+            $query->execute([$datakelas_id]);
+    
+            if ($query->rowCount() === 0) {
+                $response = $response->withStatus(404);
+                $response->getBody()->write(json_encode(
+                    [
+                        'message' => 'Data tidak ditemukan'
+                    ]
+                ));
+            } else {
+                $response->getBody()->write(json_encode(
+                    [
+                        'message' => 'Data isi kelas dengan ID ' . $datakelas_id . ' telah dihapus pada database '
+                    ]
+                ));
+            }
+        } catch (PDOException $e) {
+            $response = $response->withStatus(500);
+            $response->getBody()->write(json_encode(
+                [
+                    'message' => 'Terdapat error pada database ' . $e->getMessage()
+                ]
+            ));
+        }
+    
+        return $response->withHeader("Content-Type", "application/json");
+    });
+
+    //delete by id pada tabel satuanpendidikan
+    $app->delete('/satuanpendidikan/{id_satuanpendidikan}', function (Request $request, Response $response, $args) {
+        $id_satpen = $args['id_satuanpendidikan'];
+        $db = $this->get(PDO::class);
+    
+        try {
+            $query = $db->prepare('CALL DeleteSatuanPendidikanById(?)');
+            $query->execute([$id_satpen]);
+    
+            if ($query->rowCount() === 0) {
+                $response = $response->withStatus(404);
+                $response->getBody()->write(json_encode(
+                    [
+                        'message' => 'Data tidak ditemukan'
+                    ]
+                ));
+            } else {
+                $response->getBody()->write(json_encode(
+                    [
+                        'message' => 'Data isi kelas dengan ID ' . $id_satpen . ' telah dihapus pada database '
+                    ]
+                ));
+            }
+        } catch (PDOException $e) {
+            $response = $response->withStatus(500);
+            $response->getBody()->write(json_encode(
+                [
+                    'message' => 'Terdapat error pada database ' . $e->getMessage()
+                ]
+            ));
+        }
+    
+        return $response->withHeader("Content-Type", "application/json");
+    });
+
 };
