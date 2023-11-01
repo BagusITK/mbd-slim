@@ -110,7 +110,7 @@ return function (App $app) {
         }
     });
 
-    //post data pada tabel data_isi_peserta_kelas
+    //post data pada tabel satuanependidikan
     $app->post('/satuanpendidikan', function (Request $request, Response $response) {
         $parsedBody = $request->getParsedBody();
     
@@ -170,11 +170,12 @@ return function (App $app) {
         $data = $request->getParsedBody();
     
         $nama_kelas = $data['nama_kelas'];
+        $id_satuanpendidikan = $data['id_satuanpendidikan'];
     
         $db = $this->get(PDO::class);
     
         try {
-            $query = $db->prepare('CALL UpdateKelas(?, ?)');
+            $query = $db->prepare('CALL UpdateKelas(?, ?, ?)');
             $query->execute([$kelas_id, $nama_kelas]);
     
             if ($query->rowCount() === 0) {
@@ -242,7 +243,7 @@ return function (App $app) {
         $db = $this->get(PDO::class);
     
         try {
-            $query = $db->prepare('CALL UpdateKelas(?, ?)');
+            $query = $db->prepare('CALL UpdateSatuanPendidikan(?, ?)');
             $query->execute([$id_satpen, $nama_satuanpendidikan]);
     
             if ($query->rowCount() === 0) {
