@@ -203,15 +203,15 @@ return function (App $app) {
         $datakelas_id = $args['id'];
         $data = $request->getParsedBody();
     
-        $nama_kelas = $data['nama_kelas'];
         $jumlah_rombel = $data['jumlah_rombel'];
         $peserta_didik = $data['peserta_didik'];
+        $id_kelas = $data['id_kelas'];
     
         $db = $this->get(PDO::class);
     
         try {
             $query = $db->prepare('CALL UpdateDataIsiPesertaKelas(?, ?, ?, ?)');
-            $query->execute([$datakelas_id, $nama_kelas, $jumlah_rombel, $peserta_didik]);
+            $query->execute([$datakelas_id, $jumlah_rombel, $peserta_didik, $id_kelas]);
     
             if ($query->rowCount() === 0) {
                 $response = $response->withStatus(404);
