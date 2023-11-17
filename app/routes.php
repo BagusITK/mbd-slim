@@ -110,7 +110,7 @@ return function (App $app) {
         }
     });
 
-    //post data pada tabel satuanependidikan
+    //post data pada tabel satuanpendidikan
     $app->post('/satuanpendidikan', function (Request $request, Response $response) {
         $parsedBody = $request->getParsedBody();
     
