@@ -176,7 +176,7 @@ return function (App $app) {
     
         try {
             $query = $db->prepare('CALL UpdateKelas(?, ?, ?)');
-            $query->execute([$kelas_id, $nama_kelas]);
+            $query->execute([$kelas_id, $nama_kelas, $id_satuanpendidikan]);
     
             if ($query->rowCount() === 0) {
                 $response = $response->withStatus(404);
