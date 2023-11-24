@@ -48,7 +48,7 @@ return function (App $app) {
     $app->get('/siswa', function (Request $request, Response $response) {
         $db = $this->get(PDO::class);
 
-        $query = $db->query('CALL selectAllSiswa');
+        $query = $db->query('CALL selectSiswa');
         $results = $query->fetchAll(PDO::FETCH_ASSOC);
         $response->getBody()->write(json_encode($results));
 
@@ -564,8 +564,8 @@ return function (App $app) {
         $db = $this->get(PDO::class);
     
         try {
-            $query = $db->prepare('CALL DeleteKelasById(?)');
-            $query->execute([$kelas_id]);
+            $query = $db->prepare('CALL DeleteSiswaById(?)');
+            $query->execute([$siswa_id]);
     
             if ($query->rowCount() === 0) {
                 $response = $response->withStatus(404);
@@ -577,7 +577,7 @@ return function (App $app) {
             } else {
                 $response->getBody()->write(json_encode(
                     [
-                        'message' => 'Data kelas dengan ID ' . $kelas_id . ' telah dihapus pada database '
+                        'message' => 'Data kelas dengan ID ' . $siswa_id . ' telah dihapus pada database '
                     ]
                 ));
             }
